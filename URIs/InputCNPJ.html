@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>GPA Automation Solution</title>
+    </head>
+    <style>
+        html,body{
+            height: 100%;
+        }
+        #container {
+            width: 150px;
+            height: fit-content;
+            border: 1px solid gray;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;    
+        }
+        #container textarea {
+            width: 100%;
+            height: 200px;
+            resize: none;
+        }
+        #container button {
+            width: 100%;
+            height: 40px;
+        }
+        .valid {
+            display: none;
+        }
+        .invalid {
+            color: red;
+            display: block;
+        }
+    </style>
+    <body>
+        <div id="container">
+            <p>Insira o CNPJ</p>
+            <textarea id="listaCnpj" oninput="VerifyValues()"></textarea>
+            <p id="errorAlert" class="valid">FORMATO INVÁLIDO</p>
+            <br>
+            <button id="submitBtn" onclick="SubmitValues()" disabled>INICIAR</button>
+        </div>
+
+        <script type="text/javascript">
+            var el_ListaCnpj = document.getElementById("listaCnpj");
+            var el_ErrorAlert = document.getElementById("errorAlert");
+            var el_SubmitBtn = document.getElementById("submitBtn");
+            var strCNPJs = "";
+            const CNPJ_SIZE = 14;
+            //VALORES DE TESTE PARA DEBUGAR
+            el_ListaCnpj.value = "41096810000170\n10173546000106\n10238563000176\n10580762000168\n10797130000150"
+
+            function SubmitValues() {
+                //retorna valor para UiPath
+                console.log(strCNPJs);
+                window.external.setResult(strCNPJs);
+                return true;
+            }
+
+            function VerifyValues(){
+                //remove classe invalid
+                el_ErrorAlert.classList.remove("invalid");
+                el_SubmitBtn.disabled = false;
+                //remove qualquer caractere que não seja numerico, \n ou \r
+                el_ListaCnpj.value = el_ListaCnpj.value.replace(/[^0-9\r\n]+/g, "");
+                
+                //converte em array de cnpjs, seprando pelas virgulas
+                ArrayCnpj = el_ListaCnpj.value.split('\n');
+                var i;
+                for(i = 0; i < ArrayCnpj.length; i++) {
+                    //adiciona classe invalid, e desabilita botão se não ter o formato correto
+                    if (ArrayCnpj[i].length != CNPJ_SIZE && ArrayCnpj[i] != "") {
+                        el_ErrorAlert.classList.add("invalid"); 
+                        el_SubmitBtn.disabled = true;
+                        return;
+                    }
+                    //remove elementos vazios do array
+                    if(ArrayCnpj[i] == "") {
+                        ArrayCnpj.splice(i, 1);
+                    }
+                };
+
+                if(el_SubmitBtn.disabled){
+                    return;
+                }
+
+                if(ArrayCnpj.length > 0) {
+                    el_SubmitBtn.disabled = false;
+                }
+                else  {
+                    el_SubmitBtn.disabled = true;    
+                }
+                //monta a string q sera enviada ao UiPATH
+                strCNPJs = ""
+                for(i = 0; i < ArrayCnpj.length; i++) {
+                    if(i < (ArrayCnpj.length-1))
+                        strCNPJs += ArrayCnpj[i] + ",";
+                    else
+                        strCNPJs += ArrayCnpj[ArrayCnpj.length-1];
+                };
+                
+            }
+        </script>
+    </body>
+</html>
